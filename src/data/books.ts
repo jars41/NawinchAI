@@ -6,6 +6,9 @@ export interface Book {
   synopsis: string;
   coverUrl: string;
   trailerUrl?: string;
+  pdfUrl?: string;
+  videoUrl?: string;
+  audioUrl?: string;
   lessons: Lesson[];
 }
 
@@ -34,6 +37,7 @@ export const booksData: Book[] = [
     synopsis: 'En un futuro totalitario, Winston Smith trabaja reescribiendo la historia en el Ministerio de la Verdad. Una poderosa historia sobre control, libertad y resistencia.',
     coverUrl: 'https://images.unsplash.com/photo-1541963463532-d68292c34b19?w=400',
     trailerUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    pdfUrl: '/pdfs/1984.pdf',
     lessons: [
       {
         id: 'lesson-1',
@@ -100,6 +104,64 @@ export const booksData: Book[] = [
     lessons: []
   },
   {
+    id: 'paco-yunque',
+    title: 'Paco Yunque',
+    author: 'César Vallejo',
+    category: 'Literatura Peruana',
+    synopsis: 'Un conmovedor relato sobre Paco Yunque, un niño humilde que enfrenta las injusticias sociales en su primer día de clases. Una obra emblemática que retrata la desigualdad y la amistad en el Perú.',
+    coverUrl: '/images/portada-paco.png',
+    trailerUrl: '/videos/paco_trailer.mp4',
+    pdfUrl: '/pdfs/paco.pdf',
+    videoUrl: '/videos/video_paco.mp4',
+    audioUrl: '/audios/audio-paco.wav',
+    lessons: [
+      {
+        id: 'paco-lesson-1',
+        title: 'Introducción a Paco Yunque',
+        content: 'Conoce la historia de Paco y su primer día de clases',
+        questions: [
+          {
+            id: 'pq1',
+            type: 'multiple-choice',
+            question: '¿Quién es el autor de Paco Yunque?',
+            options: ['César Vallejo', 'Mario Vargas Llosa', 'José María Arguedas', 'Ciro Alegría'],
+            correctAnswer: 'César Vallejo'
+          }
+        ],
+        completed: false
+      },
+      {
+        id: 'paco-lesson-2',
+        title: 'Los Personajes',
+        content: 'Explora los personajes principales del relato',
+        questions: [
+          {
+            id: 'pq2',
+            type: 'multiple-choice',
+            question: '¿Qué representa Paco Fariña en el cuento?',
+            options: ['La humildad', 'El abuso de poder', 'La amistad', 'La sabiduría'],
+            correctAnswer: 'El abuso de poder'
+          }
+        ],
+        completed: false
+      },
+      {
+        id: 'paco-lesson-3',
+        title: 'Temas Sociales',
+        content: 'Analiza los temas de desigualdad y justicia social',
+        questions: [
+          {
+            id: 'pq3',
+            type: 'fill-blank',
+            question: 'Paco Yunque representa a los niños más _____ de la sociedad',
+            correctAnswer: 'humildes'
+          }
+        ],
+        completed: false
+      }
+    ]
+  },
+  {
     id: 'foundation',
     title: 'Fundación',
     author: 'Isaac Asimov',
@@ -164,5 +226,14 @@ export const getCategorizedBooks = () => {
 };
 
 export const getBookById = (id: string) => {
-  return booksData.find(book => book.id === id);
+  // Primero buscar en libros locales
+  const localBook = booksData.find(book => book.id === id);
+  if (localBook) return localBook;
+  
+  // Si no se encuentra, buscar en Google Drive
+  const { getDriveBookById, convertDriveBookToBook } = require('@/services/googleDriveService');
+  const driveBook = getDriveBookById(id);
+  if (driveBook) return convertDriveBookToBook(driveBook);
+  
+  return undefined;
 };

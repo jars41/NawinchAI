@@ -1,7 +1,10 @@
-import { Search } from "lucide-react";
+import { Search, Cloud } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import BookCard from "@/components/BookCard";
 import { getCategorizedBooks } from "@/data/books";
+import { getBooksByPreferences, getDriveCategories, getDriveBooksByCategory, convertDriveBookToBook } from "@/services/googleDriveService";
+import { useAuth } from "@/contexts/AuthContext";
+import { Badge } from "@/components/ui/badge";
 import {
   Carousel,
   CarouselContent,
@@ -11,7 +14,19 @@ import {
 } from "@/components/ui/carousel";
 
 const HomePage = () => {
+  const { user } = useAuth();
   const categorizedBooks = getCategorizedBooks();
+  
+  // Obtener libros de Google Drive basados en preferencias
+  const driveBooks = getBooksByPreferences(user?.preferences || []);
+  const driveCategories = getDriveCategories();
+  
+  // Agrupar libros de Drive por categoría
+  const driveCategorized = driveCategories.map(categoryName => ({
+    name: categoryName,
+    books: getDriveBooksByCategory(categoryName).map(convertDriveBookToBook),
+    isFromDrive: true
+  }));
 
   return (
     <div className="min-h-screen bg-background">
@@ -28,8 +43,25 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Category Carousels */}
-      <div className="px-4 pb-20 space-y-12">
+      {/* Google Drive Books Section */}
+      {driveBooks.length > 0 && (
+        <div className="px-4 pb-8">
+          <div className="container mx-auto">
+            <div className="flex items-center gap-3 mb-6">
+              <h2 className="text-2xl font-bold text-foreground">
+                Biblioteca desde Google Drive
+              </h2>
+              <Badge variant="secondary" className="gap-1">
+                <Cloud className="h-3 w-3" />
+                {driveBooks.length} libros
+              </Badge>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Category Carousels - Libros locales */}
+      <div className="px-4 pb-8 space-y-12">
         {categorizedBooks.map((category) => (
           <div key={category.name} className="container mx-auto">
             <h2 className="text-2xl font-bold text-foreground mb-6">
@@ -55,6 +87,42 @@ const HomePage = () => {
           </div>
         ))}
       </div>
+
+      {/* Category Carousels - Libros de Google Drive */}
+      {driveCategorized.length > 0 && (
+        <div className="px-4 pb-20 space-y-12 border-t border-border pt-8">
+          {driveCategorized.map((category) => (
+            <div key={`drive-${category.name}`} className="container mx-auto">
+              <div className="flex items-center gap-3 mb-6">
+                <h2 className="text-2xl font-bold text-foreground">
+                  {category.name}
+                </h2>
+                <Badge variant="outline" className="gap-1">
+                  <Cloud className="h-3 w-3" />
+                  Drive
+                </Badge>
+              </div>
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                className="w-full"
+              >
+                <CarouselContent className="-ml-4">
+                  {category.books.map((book) => (
+                    <CarouselItem key={book.id} className="pl-4 basis-auto">
+                      <BookCard book={book} />
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="hidden md:flex" />
+                <CarouselNext className="hidden md:flex" />
+              </Carousel>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

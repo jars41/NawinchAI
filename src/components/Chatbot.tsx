@@ -14,7 +14,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: '¡Hola! Soy tu asistente de LectorIA. ¿En qué puedo ayudarte hoy?',
+      text: '¡Hola! Soy tu asistente. ¿En qué puedo ayudarte hoy?',
       sender: 'bot'
     }
   ]);
@@ -59,7 +59,7 @@ const Chatbot = () => {
           {/* Header */}
           <div className="p-4 border-b border-border bg-gradient-primary rounded-t-lg">
             <h3 className="text-lg font-semibold text-primary-foreground">
-              Asistente LectorIA
+              Asistente
             </h3>
           </div>
 
